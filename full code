@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>芳和實驗中學環境現況</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #f4f4f4;
+            --sidebar-color: #4a4545;
+            --card-bg: #ebebeb;
+            --header-bg: #e0d8d7;
+            --radius: 15px; 
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg-color); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+        .header { height: 60px; background: var(--header-bg); display: flex; align-items: center; padding: 0 25px; font-weight: 600; position: relative; flex-shrink: 0; }
+        #data-status { position: absolute; right: 25px; font-size: 0.85rem; padding: 5px 12px; border-radius: 10px; background: #fff; border: 1px solid #ddd; color: #777; transition: all 0.3s; }
+
+        .app-container { display: flex; flex: 1; overflow: hidden; }
+
+        .sidebar { width: 280px; background: var(--sidebar-color); color: white; padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
+        
+        .dropdown-container { position: relative; margin-bottom: 20px; }
+        .dropdown-btn { 
+            width: 100%; padding: 15px; border-radius: 10px; border: none; 
+            background: white; text-align: left; font-weight: bold; cursor: pointer; font-size: 1rem;
+        }
+        .dropdown-list { 
+            position: absolute; top: 100%; left: 0; right: 0; background: #5a5555; 
+            border-radius: 0 0 10px 10px; list-style: none; z-index: 3000; display: none; overflow: hidden; 
+        }
+        .dropdown-list.show { display: block; }
+        .dropdown-list li { padding: 12px 15px; border-bottom: 1px solid #6a6565; cursor: pointer; color: white; }
+        .dropdown-list li:hover { background: #7a7575; }
+
+        .menu-buttons { display: flex; flex-direction: column; gap: 10px; }
+        .nav-btn { 
+            background: transparent; border: 1px solid rgba(255,255,255,0.15); 
+            color: rgba(255,255,255,0.8); padding: 12px; border-radius: 12px; 
+            cursor: pointer; text-align: left; padding-left: 20px; font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+        .nav-btn:hover { background: rgba(255,255,255,0.1); color: white; border-color: rgba(255,255,255,0.4); }
+
+        .sidebar-bottom { margin-top: auto; background: rgba(255,255,255,0.1); padding: 15px; border-radius: var(--radius); display: flex; align-items: center; gap: 15px; }
+        .analog-clock { width: 55px; height: 55px; position: relative; border: 2px solid white; border-radius: 50%; flex-shrink: 0; }
+        .hand { position: absolute; bottom: 50%; left: 50%; transform-origin: bottom; background: white; border-radius: 4px; transform: translateX(-50%); }
+        .hour-hand { width: 3px; height: 12px; }
+        .min-hand { width: 2px; height: 18px; }
+        .sec-hand { width: 1px; height: 20px; background: #ff4444; }
+
+        .main-content { flex: 1; padding: 25px; }
+        .view-container { display: flex; flex-direction: column; gap: 20px; height: 100%; }
+        .hidden { display: none !important; }
+
+        .row-top { flex: 2.2; display: flex; gap: 20px; }
+        .row-bottom { flex: 1; display: flex; gap: 20px; }
+        .card { background: var(--card-bg); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; position: relative; }
+
+        .gauge-card { flex: 2.5; flex-direction: column; padding: 10px; }
+        .canvas-container { width: 320px; height: 320px; position: relative; display: flex; align-items: center; justify-content: center; }
+        .gauge-overlay { position: absolute; top: 52%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+        .gauge-overlay .value { font-size: 5rem; font-weight: 800; color: #666; line-height: 1; }
+        .aqi-notice { margin-top: 15px; padding: 6px 25px; border-radius: 20px; font-weight: bold; color: white; font-size: 1rem; }
+
+        .stack-column { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+        .stack-item { flex: 1; font-size: 1.3rem; font-weight: 600; color: #888; }
+
+        .info-group-triple { flex: 2.2; display: flex; background: var(--card-bg); border-radius: var(--radius); overflow: hidden; }
+        .segment { flex: 1; border-right: 1px solid #d4d4d4; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 600; color: #888; }
+        .segment:last-child { border-right: none; }
+
+        .info-group-double { flex: 1; display: flex; gap: 20px; }
+        .half-card { flex: 1; font-size: 1.2rem; font-weight: 600; color: #888; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 9999; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: white; padding: 30px; border-radius: var(--radius); width: 85%; max-width: 800px; position: relative; }
+        .close-modal { position: absolute; top: 15px; right: 20px; font-size: 2rem; cursor: pointer; color: #999; border:none; background:none; }
+        .chart-wrapper { height: 350px; width: 100%; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">芳和實驗中學環境現況<div id="data-status">● 數據載入中</div></div>
+
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="dropdown-container">
+                <button class="dropdown-btn" id="source-selector">小芳堂 ▼</button>
+                <ul class="dropdown-list" id="source-list">
+                    <li data-source="A">小芳堂</li>
+                    <li data-source="B">司令台</li>
+                    <li data-source="C">小田原</li>
+                    <li data-source="D">腳踏車練習場</li>
+                    <li data-source="E">植物觀測</li>
+                </ul>
+            </div>
+            
+            <div class="menu-buttons">
+                <button class="nav-btn" onclick="openModal('溫度')">溫度</button>
+                <button class="nav-btn" onclick="openModal('日照')">日照</button>
+                <button class="nav-btn" onclick="openModal('風速')">風速</button>
+                <button class="nav-btn" onclick="openModal('濕度')">濕度</button>
+                <button class="nav-btn" onclick="openModal('碳排放')">碳排放</button>
+                <button class="nav-btn" onclick="openModal('有機物')">有機物</button>
+                <button class="nav-btn" onclick="openModal('PM2.5')">PM2.5</button>
+                <button class="nav-btn" onclick="openModal('用電量')">用電量</button>
+            </div>
+            
+            <div class="sidebar-bottom">
+                <div class="analog-clock"><div class="hand hour-hand" id="hr"></div><div class="hand min-hand" id="mn"></div><div class="hand sec-hand" id="sc"></div></div>
+                <div><div id="date-display" style="font-size:0.7rem">--</div><div id="time-display" style="font-size:0.8rem; font-weight:bold">00:00:00</div></div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div id="standard-layout" class="view-container">
+                <div class="row-top">
+                    <div class="card gauge-card">
+                        <div class="canvas-container">
+                            <canvas id="pm25Gauge"></canvas>
+                            <div class="gauge-overlay">
+                                <div style="color:#aaa; font-size:1.1rem; font-weight: bold;">PM2.5</div>
+                                <div class="value" id="pm25-val">--</div>
+                                <div id="aqi-notice" class="aqi-notice">...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stack-column">
+                        <div class="card stack-item" id="temp-display">-- °C</div>
+                        <div class="card stack-item" id="lux-display">--</div>
+                        <div class="card stack-item" id="wind-display">--</div>
+                        <div class="card stack-item" id="humi-display">-- %</div>
+                    </div>
+                </div>
+                <div class="row-bottom">
+                    <div class="info-group-triple">
+                        <div class="segment" id="co2-display">-- ppm</div>
+                        <div class="segment" id="tvoc-display">-- ppb</div>
+                        <div class="segment" id="power-display">--</div>
+                    </div>
+                    <div class="info-group-double">
+                        <div class="card half-card" id="precip-display">-- %</div>
+                        <div class="card half-card" id="weather-icon">⛅</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="no-data-layout" class="view-container hidden">
+                <div class="card" style="flex:1; font-size: 1.2rem;">⚠️ 該地點目前無感測器數據</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="history-modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+            <h2 id="modal-title">歷史趨勢</h2>
+            <div class="chart-wrapper" id="chartParent"><canvas id="historyChart"></canvas></div>
+        </div>
+    </div>
+
+    <script>
+        const config = {
+            'A': { name: '小芳堂', id: 'B827EB63D1C8', type: 'lass' },
+            'B': { name: '司令台', id: 'B827EBC2994D', type: 'lass' },
+            'C': { name: '小田原', type: 'none' },
+            'D': { name: '腳踏車練習場', type: 'none' },
+            'E': { name: '植物觀測', type: 'none' }
+        };
+
+        let currentSrc = 'A';
+        let gauge, historyChart, dataTimer;
+
+        window.onload = () => {
+            initGauge();
+            updateClock();
+            setInterval(updateClock, 1000);
+            setupDropdown();
+            switchPage('A');
+        };
+
+        function setupDropdown() {
+            const btn = document.getElementById('source-selector');
+            const list = document.getElementById('source-list');
+            btn.onclick = (e) => { e.stopPropagation(); list.classList.toggle('show'); };
+            window.onclick = () => list.classList.remove('show');
+            document.querySelectorAll('#source-list li').forEach(li => {
+                li.onclick = () => {
+                    const src = li.dataset.source;
+                    btn.textContent = config[src].name + " ▼";
+                    switchPage(src);
+                };
+            });
+        }
+
+        function switchPage(src) {
+            currentSrc = src;
+            if (dataTimer) clearInterval(dataTimer);
+            document.getElementById('standard-layout').classList.add('hidden');
+            document.getElementById('no-data-layout').classList.add('hidden');
+
+            if (config[src].type === 'lass') {
+                document.getElementById('standard-layout').classList.remove('hidden');
+                fetchData();
+                dataTimer = setInterval(fetchData, 30000);
+            } else {
+                document.getElementById('no-data-layout').classList.remove('hidden');
+            }
+        }
+
+        function initGauge() {
+            const ctx = document.getElementById('pm25Gauge').getContext('2d');
+            gauge = new Chart(ctx, {
+                type: 'doughnut',
+                data: { datasets: [{ data: [0, 150], backgroundColor: ['#95b991', '#e8e8e8'], borderWidth: 0, circumference: 270, rotation: 225, cutout: '80%', borderRadius: 8 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        async function fetchData() {
+            try {
+                const res = await fetch(`https://pm25.lass-net.org/data/last.php?device_id=${config[currentSrc].id}`);
+                const json = await res.json();
+                
+                if (!json.feeds || json.feeds.length === 0) {
+                    updateAllToNull();
+                    return;
+                }
+
+                const feedData = json.feeds[0];
+                const deviceKey = Object.keys(feedData)[0];
+                const d = feedData[deviceKey];
+
+                // 1. PM2.5 (LASS s_d0)
+                const pm25 = d.s_d0;
+                document.getElementById('pm25-val').textContent = (pm25 != null) ? Math.round(pm25) : "--";
+                
+                if (pm25 != null) {
+                    const color = pm25 < 30 ? '#3aa02d' : (pm25 < 70 ? '#fffd21' : '#fa0000');
+                    document.getElementById('aqi-notice').textContent = pm25 < 30 ? '良好' : (pm25 < 70 ? '普通' : '警惕');
+                    document.getElementById('aqi-notice').style.backgroundColor = color;
+                    document.getElementById('aqi-notice').style.color = pm25 < 70 && pm25 >= 30 ? '#000' : '#fff';
+                    
+                    gauge.data.datasets[0].backgroundColor = [color, '#e8e8e8'];
+                    gauge.data.datasets[0].data = [pm25, Math.max(0, 150 - pm25)];
+                    gauge.update();
+                }
+
+                // 2. Core (Temp, Humidity)
+                const temp = d.s_t0;
+                const humi = d.s_h0;
+                document.getElementById('temp-display').textContent = (temp != null) ? `${temp.toFixed(1)} °C` : `-- °C`;
+                document.getElementById('humi-display').textContent = (humi != null) ? `${humi.toFixed(0)} %` : `-- %`;
+
+                // 3. Environment (CO2 s_c0, TVOC s_g8)
+                const co2Val = d.s_g8;
+                const tvocVal = d.s_gg;
+                document.getElementById('co2-display').textContent = (co2Val != null) ? `${Math.round(co2Val)} ppm` : `-- ppm`;
+                document.getElementById('tvoc-display').textContent = (tvocVal != null) ? `${Math.round(tvocVal)} ppb` : `-- ppb`;
+
+                // 4. Logic (Precipitation)
+                if (temp != null && humi != null) {
+                    let prob = (Math.pow(humi, 2) / 115) + (temp > 28 ? 8 : 0);
+                    prob = Math.min(95, Math.max(5, prob));
+                    document.getElementById('precip-display').textContent = `${prob.toFixed(0)} %`;
+                    document.getElementById('weather-icon').textContent = prob > 70 ? '🌧️' : (prob > 40 ? '☁️' : '⛅');
+                }
+
+                document.getElementById('data-status').innerHTML = `● ${config[currentSrc].id} 數據已更新`;
+                document.getElementById('data-status').style.color = '#2e7d32';
+                
+            } catch (e) { 
+                console.error("Fetch Error:", e);
+                updateAllToNull();
+            }
+        }
+
+        function updateAllToNull() {
+            const ids = ['pm25-val', 'temp-display', 'humi-display', 'co2-display', 'tvoc-display', 'precip-display'];
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = "--";
+            });
+            document.getElementById('data-status').innerHTML = '● 訊號中斷';
+            document.getElementById('data-status').style.color = '#d32f2f';
+        }
+
+        function openModal(t) {
+            document.getElementById('modal-title').textContent = t + " 歷史趨勢";
+            document.getElementById('history-modal').classList.add('active');
+            const parent = document.getElementById('chartParent');
+            parent.innerHTML = '<canvas id="historyChart"></canvas>';
+            setTimeout(() => {
+                const ctx = document.getElementById('historyChart').getContext('2d');
+                historyChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'],
+                        datasets: [{ label: t, data: [15, 22, 28, 24, 19, 21], borderColor: '#4a4545', tension: 0.4, fill: true, backgroundColor: 'rgba(74, 69, 69, 0.05)' }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }, 50);
+        }
+
+        function closeModal() { document.getElementById('history-modal').classList.remove('active'); }
+
+        function updateClock() {
+            const now = new Date();
+            const h = now.getHours();
+            const m = now.getMinutes();
+            const s = now.getSeconds();
+            document.getElementById('hr').style.transform = `translateX(-50%) rotate(${(h % 12) * 30 + m * 0.5}deg)`;
+            document.getElementById('mn').style.transform = `translateX(-50%) rotate(${m * 6}deg)`;
+            document.getElementById('sc').style.transform = `translateX(-50%) rotate(${s * 6}deg)`;
+            document.getElementById('time-display').textContent = now.toLocaleTimeString('zh-TW', {hour12: false});
+            document.getElementById('date-display').textContent = now.toLocaleDateString('zh-TW', { weekday: 'long', month: 'numeric', day: 'numeric' });
+        }
+    </script>
+</body>
+</html>
