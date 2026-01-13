@@ -57,7 +57,6 @@
         .info-group-weather { flex: 1; display: flex; gap: 20px; }
         .weather-card { flex: 1; font-size: 2rem; font-weight: 600; color: #888; }
 
-        /* Modal Styles */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 9999; }
         .modal-overlay.active { display: flex; }
         .modal-content { background: white; padding: 30px; border-radius: var(--radius); width: 85%; max-width: 800px; position: relative; }
@@ -191,23 +190,51 @@
                 if (!json.feeds || json.feeds.length === 0) throw new Error();
                 const d = json.feeds[0][Object.keys(json.feeds[0])[0]];
 
+                // PM2.5 更新與顏色
                 const pm = Math.round(d.s_d0);
                 document.getElementById('pm25-val').textContent = pm;
-                const color = pm < 30 ? '#3aa02d' : (pm < 70 ? '#fffd21' : '#fa0000');
+                const pmColor = pm < 30 ? '#3aa02d' : (pm < 70 ? '#fffd21' : '#fa0000');
                 const notice = document.getElementById('aqi-notice');
                 notice.textContent = pm < 30 ? '良好' : '普通';
-                notice.style.backgroundColor = color;
+                notice.style.backgroundColor = pmColor;
                 notice.style.color = (pm >= 30 && pm < 70) ? '#000' : '#fff';
+                document.getElementById('pm25-val').style.color = pmColor;
 
-                gauge.data.datasets[0].backgroundColor = [color, '#e0e0e0'];
+                gauge.data.datasets[0].backgroundColor = [pmColor, '#e0e0e0'];
                 gauge.data.datasets[0].data = [pm, 150 - pm];
                 gauge.update();
 
-                document.getElementById('temp-display').textContent = `${d.s_t0.toFixed(1)} °C`;
-                document.getElementById('humi-display').textContent = `${Math.round(d.s_h0)} %`;
-                document.getElementById('co2-display').textContent = d.s_g8 ? `${Math.round(d.s_g8)} ppm` : "-- ppm";
-                document.getElementById('tvoc-display').textContent = d.s_g8 ? `${Math.round(d.s_g8)} ppb` : "-- ppb";
+                // 溫度顏色邏輯
+                const tempEl = document.getElementById('temp-display');
+                tempEl.textContent = `${d.s_t0.toFixed(1)} °C`;
+                if (d.s_t0 < 18) tempEl.style.color = '#3498db'; // 冷
+                else if (d.s_t0 > 28) tempEl.style.color = '#e74c3c'; // 熱
+                else tempEl.style.color = '#2ecc71'; // 適中
 
+                // 濕度顏色邏輯
+                const humiEl = document.getElementById('humi-display');
+                humiEl.textContent = `${Math.round(d.s_h0)} %`;
+                if (d.s_h0 < 40) humiEl.style.color = '#f1c40f'; // 乾
+                else if (d.s_h0 > 70) humiEl.style.color = '#3498db'; // 濕
+                else humiEl.style.color = '#2ecc71'; // 適中
+
+                // 二氧化碳顏色邏輯
+                const co2El = document.getElementById('co2-display');
+                const co2Val = Math.round(d.s_g8);
+                co2El.textContent = d.s_g8 ? `${co2Val} ppm` : "-- ppm";
+                if (co2Val < 800) co2El.style.color = '#2ecc71';
+                else if (co2Val < 1000) co2El.style.color = '#f1c40f';
+                else co2El.style.color = '#e74c3c';
+
+                // 有機物 (TVOC) 顏色邏輯
+                const tvocEl = document.getElementById('tvoc-display');
+                const tvocVal = Math.round(d.s_g8); // 這裡沿用 s_g8 邏輯
+                tvocEl.textContent = d.s_g8 ? `${tvocVal} ppb` : "-- ppb";
+                if (tvocVal < 200) tvocEl.style.color = '#2ecc71';
+                else if (tvocVal < 600) tvocEl.style.color = '#f1c40f';
+                else tvocEl.style.color = '#e74c3c';
+
+                // 天氣預測
                 let prob = (Math.pow(d.s_h0, 2) / 115) + (d.s_t0 > 28 ? 8 : 0);
                 prob = Math.min(95, Math.max(5, prob));
                 document.getElementById('precip-display').textContent = `${Math.round(prob)} %`;
@@ -232,10 +259,8 @@
             try {
                 const res = await fetch(`https://pm25.lass-net.org/data/history.php?device_id=${config[currentSrc].id}`);
                 const json = await res.json();
-                
                 if (!json.feeds || json.feeds.length === 0) throw new Error("無歷史紀錄");
 
-                // 安全性檢查：過濾無效時間數據
                 const validFeeds = json.feeds.filter(f => f.time && f[key] !== undefined).slice(-24);
                 if (validFeeds.length === 0) throw new Error("數據不足");
 
@@ -266,7 +291,6 @@
                     }
                 });
             } catch (e) {
-                console.error(e);
                 ctx.font = "16px Arial";
                 ctx.fillStyle = "#999";
                 ctx.textAlign = "center";
