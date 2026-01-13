@@ -18,6 +18,7 @@
         body { font-family: -apple-system, sans-serif; background: var(--bg-color); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
         .header { height: 60px; background: var(--header-bg); display: flex; align-items: center; padding: 0 25px; font-weight: 600; position: relative; flex-shrink: 0; }
+        /* 頂部右側狀態欄位 */
         #data-status { position: absolute; right: 25px; font-size: 0.85rem; padding: 5px 12px; border-radius: 10px; background: #fff; border: 1px solid #ddd; color: #777; transition: all 0.3s; }
 
         .app-container { display: flex; flex: 1; overflow: hidden; }
@@ -129,7 +130,7 @@
         const config = {
             'A': { name: '小芳堂', id: 'B827EB63D1C8' },
             'B': { name: '司令台', id: 'B827EBC2994D' },
-            'C': { name: '學務處', id: 'B827EB797224' } // 更新為您提供的 ID
+            'C': { name: '學務處', id: 'B827EB797224' } 
         };
 
         let currentSrc = 'A';
@@ -162,10 +163,7 @@
         function switchPage(src) {
             currentSrc = src;
             if (dataInterval) clearInterval(dataInterval);
-            
-            // 立即執行一次抓取
             fetchData();
-            // 每 30 秒更新一次
             dataInterval = setInterval(fetchData, 30000);
         }
 
@@ -189,16 +187,15 @@
                 notice.style.backgroundColor = color;
                 notice.style.color = (pm >= 30 && pm < 70) ? '#000' : '#fff';
 
-                // 回復灰色填充底色
                 gauge.data.datasets[0].backgroundColor = [color, '#e0e0e0'];
                 gauge.data.datasets[0].data = [pm, Math.max(0, 150 - pm)];
                 gauge.update();
 
-                // 溫度與濕度 (右側大框)
+                // 溫度與濕度
                 document.getElementById('temp-display').textContent = `${d.s_t0.toFixed(1)} °C`;
                 document.getElementById('humi-display').textContent = `${Math.round(d.s_h0)} %`;
                 
-                // 碳排放與有機物 (對齊 s_g8)
+                // 碳排放與有機物 (使用 s_g8)
                 document.getElementById('co2-display').textContent = d.s_g8 ? `${Math.round(d.s_g8)} ppm` : "-- ppm";
                 document.getElementById('tvoc-display').textContent = d.s_g8 ? `${Math.round(d.s_g8)} ppb` : "-- ppb";
 
@@ -208,12 +205,16 @@
                 document.getElementById('precip-display').textContent = `${Math.round(prob)} %`;
                 document.getElementById('weather-icon').textContent = prob > 65 ? '🌧️' : '⛅';
 
-                document.getElementById('data-status').innerHTML = `● ${config[currentSrc].name} 數據已更新`;
-                document.getElementById('data-status').style.color = '#2e7d32';
+                // **功能回歸：顯示設備代碼與狀態**
+                const statusEl = document.getElementById('data-status');
+                statusEl.innerHTML = `● ${deviceId} 數據已更新`;
+                statusEl.style.color = '#2e7d32';
+
             } catch (e) { 
                 console.error(e);
-                document.getElementById('data-status').textContent = "● 載入錯誤";
-                document.getElementById('data-status').style.color = '#d32f2f';
+                const statusEl = document.getElementById('data-status');
+                statusEl.innerHTML = `● ${deviceId} 連線錯誤`;
+                statusEl.style.color = '#d32f2f';
             }
         }
 
@@ -224,7 +225,7 @@
                 data: {
                     datasets: [{
                         data: [0, 150],
-                        backgroundColor: ['#3aa02d', '#e0e0e0'], // 灰色填充底色
+                        backgroundColor: ['#3aa02d', '#e0e0e0'],
                         borderWidth: 0,
                         circumference: 270,
                         rotation: 225,
