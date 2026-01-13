@@ -68,14 +68,11 @@
         .aqi-notice { margin-top: 15px; padding: 6px 25px; border-radius: 20px; font-weight: bold; color: white; font-size: 1rem; }
 
         .stack-column { flex: 1; display: flex; flex-direction: column; gap: 15px; }
-        .stack-item { flex: 1; font-size: 1.3rem; font-weight: 600; color: #888; }
+        .stack-item { flex: 1; font-size: 2rem; font-weight: 600; color: #666; } /* Increased font size for importance */
 
-        .info-group-triple { flex: 2.2; display: flex; background: var(--card-bg); border-radius: var(--radius); overflow: hidden; }
-        .segment { flex: 1; border-right: 1px solid #d4d4d4; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 600; color: #888; }
+        .info-group-wide { flex: 1; display: flex; background: var(--card-bg); border-radius: var(--radius); overflow: hidden; }
+        .segment { flex: 1; border-right: 1px solid #d4d4d4; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 600; color: #888; }
         .segment:last-child { border-right: none; }
-
-        .info-group-double { flex: 1; display: flex; gap: 20px; }
-        .half-card { flex: 1; font-size: 1.2rem; font-weight: 600; color: #888; }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 9999; }
         .modal-overlay.active { display: flex; }
@@ -95,7 +92,7 @@
                 <ul class="dropdown-list" id="source-list">
                     <li data-source="A">小芳堂</li>
                     <li data-source="B">司令台</li>
-                    <li data-source="C">小田原</li>
+                    <li data-source="C">學務處</li>
                     <li data-source="D">腳踏車練習場</li>
                     <li data-source="E">植物觀測</li>
                 </ul>
@@ -103,13 +100,10 @@
             
             <div class="menu-buttons">
                 <button class="nav-btn" onclick="openModal('溫度')">溫度</button>
-                <button class="nav-btn" onclick="openModal('日照')">日照</button>
-                <button class="nav-btn" onclick="openModal('風速')">風速</button>
                 <button class="nav-btn" onclick="openModal('濕度')">濕度</button>
                 <button class="nav-btn" onclick="openModal('碳排放')">碳排放</button>
                 <button class="nav-btn" onclick="openModal('有機物')">有機物</button>
                 <button class="nav-btn" onclick="openModal('PM2.5')">PM2.5</button>
-                <button class="nav-btn" onclick="openModal('用電量')">用電量</button>
             </div>
             
             <div class="sidebar-bottom">
@@ -133,20 +127,13 @@
                     </div>
                     <div class="stack-column">
                         <div class="card stack-item" id="temp-display">-- °C</div>
-                        <div class="card stack-item" id="lux-display">--</div>
-                        <div class="card stack-item" id="wind-display">--</div>
                         <div class="card stack-item" id="humi-display">-- %</div>
                     </div>
                 </div>
                 <div class="row-bottom">
-                    <div class="info-group-triple">
+                    <div class="info-group-wide">
                         <div class="segment" id="co2-display">-- ppm</div>
                         <div class="segment" id="tvoc-display">-- ppb</div>
-                        <div class="segment" id="power-display">--</div>
-                    </div>
-                    <div class="info-group-double">
-                        <div class="card half-card" id="precip-display">-- %</div>
-                        <div class="card half-card" id="weather-icon">⛅</div>
                     </div>
                 </div>
             </div>
@@ -169,7 +156,7 @@
         const config = {
             'A': { name: '小芳堂', id: 'B827EB63D1C8', type: 'lass' },
             'B': { name: '司令台', id: 'B827EBC2994D', type: 'lass' },
-            'C': { name: '小田原', type: 'none' },
+            'C': { name: '學務處', type: 'none' },
             'D': { name: '腳踏車練習場', type: 'none' },
             'E': { name: '植物觀測', type: 'none' }
         };
@@ -237,43 +224,29 @@
                 const deviceKey = Object.keys(feedData)[0];
                 const d = feedData[deviceKey];
 
-                // 1. PM2.5 (LASS s_d0)
                 const pm25 = d.s_d0;
                 document.getElementById('pm25-val').textContent = (pm25 != null) ? Math.round(pm25) : "--";
                 
                 if (pm25 != null) {
                     const color = pm25 < 30 ? '#3aa02d' : (pm25 < 70 ? '#fffd21' : '#fa0000');
-                    document.getElementById('aqi-notice').textContent = pm25 < 30 ? '良好' : (pm25 < 70 ? '普通' : '警惕');
-                    document.getElementById('aqi-notice').style.backgroundColor = color;
-                    document.getElementById('aqi-notice').style.color = pm25 < 70 && pm25 >= 30 ? '#000' : '#fff';
+                    const notice = document.getElementById('aqi-notice');
+                    notice.textContent = pm25 < 30 ? '良好' : (pm25 < 70 ? '普通' : '警惕');
+                    notice.style.backgroundColor = color;
+                    notice.style.color = pm25 < 70 && pm25 >= 30 ? '#000' : '#fff';
                     
                     gauge.data.datasets[0].backgroundColor = [color, '#e8e8e8'];
                     gauge.data.datasets[0].data = [pm25, Math.max(0, 150 - pm25)];
                     gauge.update();
                 }
 
-                // 2. Core (Temp, Humidity)
-                const temp = d.s_t0;
-                const humi = d.s_h0;
-                document.getElementById('temp-display').textContent = (temp != null) ? `${temp.toFixed(1)} °C` : `-- °C`;
-                document.getElementById('humi-display').textContent = (humi != null) ? `${humi.toFixed(0)} %` : `-- %`;
+                document.getElementById('temp-display').textContent = (d.s_t0 != null) ? `${d.s_t0.toFixed(1)} °C` : `-- °C`;
+                document.getElementById('humi-display').textContent = (d.s_h0 != null) ? `${d.s_h0.toFixed(0)} %` : `-- %`;
+                document.getElementById('co2-display').textContent = (d.s_c0 != null) ? `${Math.round(d.s_c0)} ppm` : `-- ppm`;
+                document.getElementById('tvoc-display').textContent = (d.s_g8 != null) ? `${Math.round(d.s_g8)} ppb` : `-- ppb`;
 
-                // 3. Environment (CO2 s_c0, TVOC s_g8)
-                const co2Val = d.s_g8;
-                const tvocVal = d.s_gg;
-                document.getElementById('co2-display').textContent = (co2Val != null) ? `${Math.round(co2Val)} ppm` : `-- ppm`;
-                document.getElementById('tvoc-display').textContent = (tvocVal != null) ? `${Math.round(tvocVal)} ppb` : `-- ppb`;
-
-                // 4. Logic (Precipitation)
-                if (temp != null && humi != null) {
-                    let prob = (Math.pow(humi, 2) / 115) + (temp > 28 ? 8 : 0);
-                    prob = Math.min(95, Math.max(5, prob));
-                    document.getElementById('precip-display').textContent = `${prob.toFixed(0)} %`;
-                    document.getElementById('weather-icon').textContent = prob > 70 ? '🌧️' : (prob > 40 ? '☁️' : '⛅');
-                }
-
-                document.getElementById('data-status').innerHTML = `● ${config[currentSrc].id} 數據已更新`;
-                document.getElementById('data-status').style.color = '#2e7d32';
+                const statusEl = document.getElementById('data-status');
+                statusEl.innerHTML = `● ${config[currentSrc].id} 數據已更新`;
+                statusEl.style.color = '#2e7d32';
                 
             } catch (e) { 
                 console.error("Fetch Error:", e);
@@ -282,10 +255,8 @@
         }
 
         function updateAllToNull() {
-            const ids = ['pm25-val', 'temp-display', 'humi-display', 'co2-display', 'tvoc-display', 'precip-display'];
-            ids.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.textContent = "--";
+            ['pm25-val', 'temp-display', 'humi-display', 'co2-display', 'tvoc-display'].forEach(id => {
+                document.getElementById(id).textContent = "--";
             });
             document.getElementById('data-status').innerHTML = '● 訊號中斷';
             document.getElementById('data-status').style.color = '#d32f2f';
