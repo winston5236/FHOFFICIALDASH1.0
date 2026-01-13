@@ -32,11 +32,9 @@
 
         .menu-buttons { display: flex; flex-direction: column; gap: 10px; }
         .nav-btn { background: transparent; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.8); padding: 12px; border-radius: 12px; cursor: pointer; text-align: left; padding-left: 20px; font-size: 1rem; transition: all 0.2s; }
-        .nav-btn:hover { background: rgba(255,255,255,0.1); color: white; }
 
         .main-content { flex: 1; padding: 25px; }
         .view-container { display: flex; flex-direction: column; gap: 20px; height: 100%; }
-        .hidden { display: none !important; }
 
         .row-top { flex: 2.2; display: flex; gap: 20px; }
         .row-bottom { flex: 1; display: flex; gap: 20px; }
@@ -49,10 +47,10 @@
         .aqi-notice { margin-top: 15px; padding: 6px 25px; border-radius: 20px; font-weight: bold; color: white; font-size: 1rem; }
 
         .stack-column { flex: 1; display: flex; flex-direction: column; gap: 20px; }
-        .stack-item { flex: 1; font-size: 2.5rem; font-weight: 600; color: #666; text-align: center; }
+        .stack-item { flex: 1; font-size: 2.8rem; font-weight: 600; color: #666; text-align: center; }
 
         .info-group-wide { flex: 2.2; display: flex; background: var(--card-bg); border-radius: var(--radius); overflow: hidden; }
-        .segment { flex: 1; border-right: 1px solid #d4d4d4; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 600; color: #888; }
+        .segment { flex: 1; border-right: 1px solid #d4d4d4; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 600; color: #888; }
         .segment:last-child { border-right: none; }
 
         .info-group-weather { flex: 1; display: flex; gap: 20px; }
@@ -96,7 +94,7 @@
         </div>
 
         <div class="main-content">
-            <div id="standard-layout" class="view-container">
+            <div class="view-container">
                 <div class="row-top">
                     <div class="card gauge-card">
                         <div class="canvas-container">
@@ -131,47 +129,58 @@
         const config = {
             'A': { name: '小芳堂', id: 'B827EB63D1C8' },
             'B': { name: '司令台', id: 'B827EBC2994D' },
-            'C': { name: '學務處', id: 'B827EB63D1C8' } 
+            'C': { name: '學務處', id: 'B827EB797224' } // 更新為您提供的 ID
         };
 
         let currentSrc = 'A';
         let gauge;
+        let dataInterval;
 
         window.onload = () => {
             initGauge();
             setupDropdown();
             updateClock();
             setInterval(updateClock, 1000);
-            fetchData();
-            setInterval(fetchData, 30000);
+            switchPage('A'); 
         };
 
-        function initGauge() {
-            const ctx = document.getElementById('pm25Gauge').getContext('2d');
-            gauge = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    datasets: [{
-                        data: [0, 150],
-                        backgroundColor: ['#3aa02d', '#e0e0e0'], // Restored gray fill track
-                        borderWidth: 0,
-                        circumference: 270,
-                        rotation: 225,
-                        cutout: '80%',
-                        borderRadius: 10
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        function setupDropdown() {
+            const btn = document.getElementById('source-selector');
+            const list = document.getElementById('source-list');
+            btn.onclick = (e) => { e.stopPropagation(); list.classList.toggle('show'); };
+            window.onclick = () => list.classList.remove('show');
+
+            document.querySelectorAll('#source-list li').forEach(li => {
+                li.onclick = () => {
+                    const src = li.dataset.source;
+                    btn.textContent = config[src].name + " ▼";
+                    switchPage(src);
+                };
             });
         }
 
-        async function fetchData() {
-            try {
-                const res = await fetch(`https://pm25.lass-net.org/data/last.php?device_id=${config[currentSrc].id}`);
-                const json = await res.json();
-                const d = json.feeds[0][Object.keys(json.feeds[0])[0]];
+        function switchPage(src) {
+            currentSrc = src;
+            if (dataInterval) clearInterval(dataInterval);
+            
+            // 立即執行一次抓取
+            fetchData();
+            // 每 30 秒更新一次
+            dataInterval = setInterval(fetchData, 30000);
+        }
 
-                // PM2.5 Logic
+        async function fetchData() {
+            const deviceId = config[currentSrc].id;
+            try {
+                const res = await fetch(`https://pm25.lass-net.org/data/last.php?device_id=${deviceId}`);
+                const json = await res.json();
+                
+                if (!json.feeds || json.feeds.length === 0) throw new Error("無數據");
+                
+                const feed = json.feeds[0];
+                const d = feed[Object.keys(feed)[0]];
+
+                // PM2.5 更新
                 const pm = Math.round(d.s_d0);
                 document.getElementById('pm25-val').textContent = pm;
                 const color = pm < 30 ? '#3aa02d' : (pm < 70 ? '#fffd21' : '#fa0000');
@@ -180,39 +189,55 @@
                 notice.style.backgroundColor = color;
                 notice.style.color = (pm >= 30 && pm < 70) ? '#000' : '#fff';
 
-                gauge.data.datasets[0].backgroundColor = [color, '#e0e0e0']; // Update with gray fill
+                // 回復灰色填充底色
+                gauge.data.datasets[0].backgroundColor = [color, '#e0e0e0'];
                 gauge.data.datasets[0].data = [pm, Math.max(0, 150 - pm)];
                 gauge.update();
 
-                // Stats
+                // 溫度與濕度 (右側大框)
                 document.getElementById('temp-display').textContent = `${d.s_t0.toFixed(1)} °C`;
                 document.getElementById('humi-display').textContent = `${Math.round(d.s_h0)} %`;
                 
-                // Carbon (Mapping s_g8 since s_c0 is empty)
+                // 碳排放與有機物 (對齊 s_g8)
                 document.getElementById('co2-display').textContent = d.s_g8 ? `${Math.round(d.s_g8)} ppm` : "-- ppm";
                 document.getElementById('tvoc-display').textContent = d.s_g8 ? `${Math.round(d.s_g8)} ppb` : "-- ppb";
 
-                // Weather
+                // 天氣模擬邏輯
                 let prob = (Math.pow(d.s_h0, 2) / 115) + (d.s_t0 > 28 ? 8 : 0);
                 prob = Math.min(95, Math.max(5, prob));
                 document.getElementById('precip-display').textContent = `${Math.round(prob)} %`;
                 document.getElementById('weather-icon').textContent = prob > 65 ? '🌧️' : '⛅';
 
-                document.getElementById('data-status').innerHTML = `● ${config[currentSrc].id} 數據已更新`;
-            } catch (e) { console.error(e); }
+                document.getElementById('data-status').innerHTML = `● ${config[currentSrc].name} 數據已更新`;
+                document.getElementById('data-status').style.color = '#2e7d32';
+            } catch (e) { 
+                console.error(e);
+                document.getElementById('data-status').textContent = "● 載入錯誤";
+                document.getElementById('data-status').style.color = '#d32f2f';
+            }
         }
 
-        function setupDropdown() {
-            const btn = document.getElementById('source-selector');
-            const list = document.getElementById('source-list');
-            btn.onclick = (e) => { e.stopPropagation(); list.classList.toggle('show'); };
-            window.onclick = () => list.classList.remove('show');
-            document.querySelectorAll('#source-list li').forEach(li => {
-                li.onclick = () => {
-                    currentSrc = li.dataset.source;
-                    btn.textContent = config[currentSrc].name + " ▼";
-                    fetchData();
-                };
+        function initGauge() {
+            const ctx = document.getElementById('pm25Gauge').getContext('2d');
+            gauge = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [0, 150],
+                        backgroundColor: ['#3aa02d', '#e0e0e0'], // 灰色填充底色
+                        borderWidth: 0,
+                        circumference: 270,
+                        rotation: 225,
+                        cutout: '80%',
+                        borderRadius: 10
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    animation: { duration: 800 },
+                    plugins: { legend: { display: false } } 
+                }
             });
         }
 
