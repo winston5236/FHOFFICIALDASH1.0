@@ -16,48 +16,21 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
-        body { 
-            font-family: -apple-system, sans-serif; 
-            background: var(--bg-color); 
-            /* Fix: Changed height to min-height to prevent stretching boxes vertically */
-            min-height: 100vh; 
-            height: auto;
-            overflow-x: hidden;
-            display: flex; 
-            flex-direction: column; 
-        }
+        /* Desktop Default: Lock scroll */
+        body { font-family: -apple-system, sans-serif; background: var(--bg-color); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-        .header { 
-            height: 60px; 
-            background: var(--header-bg); 
-            display: flex; 
-            align-items: center; 
-            padding: 0 25px; 
-            font-weight: 600; 
-            position: sticky;
-            top: 0;
-            z-index: 1001;
-            flex-shrink: 0; 
-        }
-
+        .header { height: 60px; background: var(--header-bg); display: flex; align-items: center; padding: 0 25px; font-weight: 600; position: relative; flex-shrink: 0; }
+        
+        /* Mobile Toggle (Hidden on Desktop) */
         .menu-toggle { display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer; margin-right: 15px; }
 
-        #data-status { position: absolute; right: 25px; font-size: 0.85rem; padding: 5px 12px; border-radius: 10px; background: #fff; border: 1px solid #ddd; color: #777; transition: all 0.3s; }
+        #data-status { position: absolute; right: 25px; font-size: 0.85rem; padding: 5px 12px; border-radius: 10px; background: #fff; border: 1px solid #ddd; color: #777; }
 
-        .app-container { display: flex; flex: 1; }
+        .app-container { display: flex; flex: 1; overflow: hidden; }
         
-        .sidebar { 
-            width: 280px; 
-            background: var(--sidebar-color); 
-            color: white; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            flex-shrink: 0; 
-            min-height: calc(100vh - 60px);
-            transition: transform 0.3s ease;
-        }
-
+        /* Sidebar: Fixed width for Desktop */
+        .sidebar { width: 280px; background: var(--sidebar-color); color: white; padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease; }
+        
         .dropdown-container { position: relative; margin-bottom: 20px; }
         .dropdown-btn { width: 100%; padding: 15px; border-radius: 10px; border: none; background: white; text-align: left; font-weight: bold; cursor: pointer; font-size: 1rem; }
         .dropdown-list { position: absolute; top: 100%; left: 0; right: 0; background: #5a5555; border-radius: 0 0 10px 10px; list-style: none; z-index: 3000; display: none; overflow: hidden; }
@@ -66,16 +39,13 @@
         .dropdown-list li:hover { background: #7a7575; }
 
         .menu-buttons { display: flex; flex-direction: column; gap: 10px; }
-        .nav-btn { background: transparent; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.8); padding: 12px; border-radius: 12px; cursor: pointer; text-align: left; padding-left: 20px; font-size: 1rem; transition: all 0.2s; }
-        .nav-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+        .nav-btn { background: transparent; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.8); padding: 12px; border-radius: 12px; cursor: pointer; text-align: left; padding-left: 20px; font-size: 1rem; }
 
-        .main-content { flex: 1; padding: 25px; }
-        .view-container { display: flex; flex-direction: column; gap: 20px; justify-content: flex-start; }
+        .main-content { flex: 1; padding: 25px; overflow-y: auto; }
+        .view-container { display: flex; flex-direction: column; gap: 20px; height: 100%; }
 
-        /* Rows set to flex-none or auto height to prevent vertical stretching */
-        .row-top { display: flex; gap: 20px; min-height: 380px; flex: none; }
-        .row-bottom { display: flex; gap: 20px; min-height: 180px; flex: none; }
-        
+        .row-top { flex: 2.2; display: flex; gap: 20px; }
+        .row-bottom { flex: 1; display: flex; gap: 20px; }
         .card { background: var(--card-bg); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; position: relative; }
 
         .gauge-card { flex: 2.5; flex-direction: column; padding: 10px; }
@@ -85,19 +55,19 @@
         .aqi-notice { margin-top: 15px; padding: 6px 25px; border-radius: 20px; font-weight: bold; color: white; font-size: 1rem; }
 
         .stack-column { flex: 1; display: flex; flex-direction: column; gap: 20px; }
-        .stack-item { flex: 1; font-size: 2.8rem; font-weight: 600; color: #666; text-align: center; cursor: pointer; }
+        .stack-item { flex: 1; font-size: 2.8rem; font-weight: 600; color: #666; text-align: center; }
 
         .info-group-wide { flex: 2.2; display: flex; background: var(--card-bg); border-radius: var(--radius); overflow: hidden; }
-        .segment { flex: 1; border-right: 1px solid #d4d4d4; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 600; color: #888; cursor: pointer; }
+        .segment { flex: 1; border-right: 1px solid #d4d4d4; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 600; color: #888; }
         .segment:last-child { border-right: none; }
 
         .info-group-weather { flex: 1; display: flex; gap: 20px; }
         .weather-card { flex: 1; font-size: 2rem; font-weight: 600; color: #888; }
 
+        /* Modal */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 9999; }
         .modal-overlay.active { display: flex; }
         .modal-content { background: white; padding: 30px; border-radius: var(--radius); width: 85%; max-width: 800px; position: relative; }
-        .close-modal { position: absolute; top: 15px; right: 20px; font-size: 2rem; cursor: pointer; color: #999; border:none; background:none; }
         .chart-wrapper { height: 350px; width: 100%; margin-top: 10px; }
 
         .sidebar-bottom { margin-top: auto; background: rgba(255,255,255,0.1); padding: 15px; border-radius: var(--radius); display: flex; align-items: center; gap: 15px; }
@@ -107,27 +77,31 @@
         .min-hand { width: 2px; height: 18px; }
         .sec-hand { width: 1px; height: 20px; background: #ff4444; }
 
-        /* RESPONSIVE OVERRIDES */
+        /* RESPONSIVE OVERRIDES (Phone View) */
         @media (max-width: 768px) {
+            body { overflow-y: auto; }
             .menu-toggle { display: block; }
             .header { padding: 0 15px; }
-            #data-status { position: static; margin-left: auto; font-size: 0.75rem; }
+            #data-status { position: static; margin-left: auto; font-size: 0.7rem; }
 
             .sidebar {
                 position: fixed;
                 left: 0; top: 60px; bottom: 0;
-                z-index: 1000;
-                transform: translateX(-100%);
-                box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+                z-index: 5000;
+                transform: translateX(-100%); /* Hidden by default */
             }
-            .sidebar.active { transform: translateX(0); }
+            .sidebar.active { transform: translateX(0); } /* Slide in */
 
-            .row-top, .row-bottom { flex-direction: column; height: auto; min-height: unset; }
-            .info-group-wide { flex-direction: column; height: auto; }
-            .segment { border-right: none; border-bottom: 1px solid #d4d4d4; padding: 40px 0; }
+            .app-container { overflow: visible; }
+            .main-content { padding: 15px; overflow: visible; }
             
-            .gauge-card { height: 400px; }
-            .stack-item { height: 150px; }
+            /* Convert rows to vertical columns for a long scrollable list */
+            .row-top, .row-bottom { flex-direction: column; flex: none; height: auto; }
+            .info-group-wide { flex-direction: column; flex: none; }
+            .segment { border-right: none; border-bottom: 1px solid #d4d4d4; padding: 30px 0; }
+            
+            .gauge-card { height: 400px; flex: none; }
+            .stack-item { height: 150px; flex: none; }
             .weather-card { height: 120px; }
         }
     </style>
@@ -152,11 +126,11 @@
             </div>
             
             <div class="menu-buttons">
-                <button class="nav-btn" onclick="openModalNav('溫度', 's_t0')">🌡️ 溫度</button>
-                <button class="nav-btn" onclick="openModalNav('濕度', 's_h0')">💧 濕度</button>
-                <button class="nav-btn" onclick="openModalNav('碳排放', 's_g8')">☁️ 碳排放</button>
-                <button class="nav-btn" onclick="openModalNav('有機物', 's_g8')">🧪 有機物</button>
-                <button class="nav-btn" onclick="openModalNav('PM2.5', 's_d0')">😷 PM2.5</button>
+                <button class="nav-btn" onclick="navToModal('溫度', 's_t0')">溫度</button>
+                <button class="nav-btn" onclick="navToModal('濕度', 's_h0')">濕度</button>
+                <button class="nav-btn" onclick="navToModal('碳排放', 's_g8')">碳排放</button>
+                <button class="nav-btn" onclick="navToModal('有機物', 's_g8')">有機物</button>
+                <button class="nav-btn" onclick="navToModal('PM2.5', 's_d0')">PM2.5</button>
             </div>
             
             <div class="sidebar-bottom">
@@ -179,14 +153,14 @@
                         </div>
                     </div>
                     <div class="stack-column">
-                        <div class="card stack-item" id="temp-display" onclick="openModal('溫度', 's_t0')">-- °C</div>
-                        <div class="card stack-item" id="humi-display" onclick="openModal('濕度', 's_h0')">-- %</div>
+                        <div class="card stack-item" id="temp-display">-- °C</div>
+                        <div class="card stack-item" id="humi-display">-- %</div>
                     </div>
                 </div>
                 <div class="row-bottom">
                     <div class="info-group-wide">
-                        <div class="segment" id="co2-display" onclick="openModal('碳排放', 's_g8')">-- ppm</div>
-                        <div class="segment" id="tvoc-display" onclick="openModal('有機物', 's_g8')">-- ppb</div>
+                        <div class="segment" id="co2-display">-- ppm</div>
+                        <div class="segment" id="tvoc-display">-- ppb</div>
                     </div>
                     <div class="info-group-weather">
                         <div class="card weather-card" id="precip-display">-- %</div>
@@ -197,10 +171,10 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="history-modal" onclick="closeModal()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <button class="close-modal" onclick="closeModal()">&times;</button>
-            <h2 id="modal-title">歷史趨勢</h2>
+    <div class="modal-overlay" id="history-modal">
+        <div class="modal-content">
+            <button style="float:right; border:none; background:none; font-size:2rem; cursor:pointer;" onclick="closeModal()">&times;</button>
+            <h2 id="modal-title">趨勢圖</h2>
             <div class="chart-wrapper" id="chartParent">
                 <canvas id="historyChart"></canvas>
             </div>
@@ -208,6 +182,7 @@
     </div>
 
     <script>
+        // JS Logic (Remains mostly same but adds toggle for mobile)
         const config = {
             'A': { name: '小芳堂', id: 'B827EB63D1C8' },
             'B': { name: '司令台', id: 'B827EBC2994D' },
@@ -230,8 +205,8 @@
             document.getElementById('sidebar').classList.toggle('active');
         }
 
-        function openModalNav(label, key) {
-            if (window.innerWidth <= 768) toggleSidebar();
+        function navToModal(label, key) {
+            if (window.innerWidth <= 768) toggleSidebar(); // Auto-close sidebar on mobile
             openModal(label, key);
         }
 
@@ -269,6 +244,7 @@
                 const notice = document.getElementById('aqi-notice');
                 notice.textContent = pm < 30 ? '良好' : '普通';
                 notice.style.backgroundColor = pmColor;
+                notice.style.color = (pm >= 30 && pm < 70) ? '#000' : '#fff';
                 document.getElementById('pm25-val').style.color = pmColor;
 
                 gauge.data.datasets[0].backgroundColor = [pmColor, '#e0e0e0'];
@@ -284,7 +260,7 @@
                 document.getElementById('precip-display').textContent = `${Math.round(Math.min(95, prob))} %`;
                 document.getElementById('weather-icon').textContent = prob > 65 ? '🌧️' : '⛅';
 
-                document.getElementById('data-status').innerHTML = `● ${device.name} 已更新`;
+                document.getElementById('data-status').innerHTML = `● ${device.name} 更新成功`;
             } catch (e) { 
                 document.getElementById('data-status').innerHTML = `● 連線錯誤`;
             }
