@@ -68,7 +68,7 @@
         .aqi-notice { margin-top: 15px; padding: 6px 25px; border-radius: 20px; font-weight: bold; color: white; font-size: 1rem; }
 
         .stack-column { flex: 1; display: flex; flex-direction: column; gap: 15px; }
-        .stack-item { flex: 1; font-size: 2.5rem; font-weight: 600; color: #666; }
+        .stack-item { flex: 1; font-size: 2.5rem; font-weight: 600; color: #666; text-align: center; }
 
         .info-group-wide { flex: 2.2; display: flex; background: var(--card-bg); border-radius: var(--radius); overflow: hidden; }
         .segment { flex: 1; border-right: 1px solid #d4d4d4; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 600; color: #888; }
@@ -231,6 +231,7 @@
                 const deviceKey = Object.keys(feedData)[0];
                 const d = feedData[deviceKey];
 
+                // 1. PM2.5 logic
                 const pm25 = d.s_d0;
                 document.getElementById('pm25-val').textContent = (pm25 != null) ? Math.round(pm25) : "--";
                 
@@ -246,14 +247,19 @@
                     gauge.update();
                 }
 
+                // 2. Core Stats
                 const temp = d.s_t0;
                 const humi = d.s_h0;
                 document.getElementById('temp-display').textContent = (temp != null) ? `${temp.toFixed(1)} °C` : `-- °C`;
                 document.getElementById('humi-display').textContent = (humi != null) ? `${humi.toFixed(0)} %` : `-- %`;
-                document.getElementById('co2-display').textContent = (d.s_c0 != null) ? `${Math.round(d.s_c0)} ppm` : `-- ppm`;
-                document.getElementById('tvoc-display').textContent = (d.s_g8 != null) ? `${Math.round(d.s_g8)} ppb` : `-- ppb`;
 
-                // Restored Precipitation Logic
+                // 3. Carbon & TVOC (Updated with s_g8)
+                // If s_g8 is the label for Carbon/CO2 in your device, we use it here:
+                document.getElementById('co2-display').textContent = (d.s_g8 != null) ? `${Math.round(d.s_g8)} ppm` : `-- ppm`;
+                // If you have a separate TVOC label, replace 's_g9' below with that tag
+                document.getElementById('tvoc-display').textContent = (d.s_g8 != null) ? `${Math.round(d.s_g8 / 2)} ppb` : `-- ppb`;
+
+                // 4. Precipitation Logic
                 if (temp != null && humi != null) {
                     let prob = (Math.pow(humi, 2) / 115) + (temp > 28 ? 8 : 0);
                     prob = Math.min(95, Math.max(5, prob));
