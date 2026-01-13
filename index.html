@@ -1,325 +1,325 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>芳和實驗中學環境現況</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --bg-color: #f4f4f4;
-            --sidebar-color: #4a4545;
-            --card-bg: #ebebeb;
-            --header-bg: #e0d8d7;
-            --radius: 15px; 
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>芳和實驗中學環境現況</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #f4f4f4;
+            --sidebar-color: #4a4545;
+            --card-bg: #ebebeb;
+            --header-bg: #e0d8d7;
+            --radius: 15px; 
+        }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        /* Desktop Default: Lock scroll */
-        body { font-family: -apple-system, sans-serif; background: var(--bg-color); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        /* Desktop Default: Lock scroll */
+        body { font-family: -apple-system, sans-serif; background: var(--bg-color); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-        .header { height: 60px; background: var(--header-bg); display: flex; align-items: center; padding: 0 25px; font-weight: 600; position: relative; flex-shrink: 0; }
-        
-        /* Mobile Toggle (Hidden on Desktop) */
-        .menu-toggle { display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer; margin-right: 15px; }
+        .header { height: 60px; background: var(--header-bg); display: flex; align-items: center; padding: 0 25px; font-weight: 600; position: relative; flex-shrink: 0; }
+        
+        /* Mobile Toggle (Hidden on Desktop) */
+        .menu-toggle { display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer; margin-right: 15px; }
 
-        #data-status { position: absolute; right: 25px; font-size: 0.85rem; padding: 5px 12px; border-radius: 10px; background: #fff; border: 1px solid #ddd; color: #777; }
+        #data-status { position: absolute; right: 25px; font-size: 0.85rem; padding: 5px 12px; border-radius: 10px; background: #fff; border: 1px solid #ddd; color: #777; }
 
-        .app-container { display: flex; flex: 1; overflow: hidden; }
-        
-        /* Sidebar: Fixed width for Desktop */
-        .sidebar { width: 280px; background: var(--sidebar-color); color: white; padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease; }
-        
-        .dropdown-container { position: relative; margin-bottom: 20px; }
-        .dropdown-btn { width: 100%; padding: 15px; border-radius: 10px; border: none; background: white; text-align: left; font-weight: bold; cursor: pointer; font-size: 1rem; }
-        .dropdown-list { position: absolute; top: 100%; left: 0; right: 0; background: #5a5555; border-radius: 0 0 10px 10px; list-style: none; z-index: 3000; display: none; overflow: hidden; }
-        .dropdown-list.show { display: block; }
-        .dropdown-list li { padding: 12px 15px; border-bottom: 1px solid #6a6565; cursor: pointer; }
-        .dropdown-list li:hover { background: #7a7575; }
+        .app-container { display: flex; flex: 1; overflow: hidden; }
+        
+        /* Sidebar: Fixed width for Desktop */
+        .sidebar { width: 280px; background: var(--sidebar-color); color: white; padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease; }
+        
+        .dropdown-container { position: relative; margin-bottom: 20px; }
+        .dropdown-btn { width: 100%; padding: 15px; border-radius: 10px; border: none; background: white; text-align: left; font-weight: bold; cursor: pointer; font-size: 1rem; }
+        .dropdown-list { position: absolute; top: 100%; left: 0; right: 0; background: #5a5555; border-radius: 0 0 10px 10px; list-style: none; z-index: 3000; display: none; overflow: hidden; }
+        .dropdown-list.show { display: block; }
+        .dropdown-list li { padding: 12px 15px; border-bottom: 1px solid #6a6565; cursor: pointer; }
+        .dropdown-list li:hover { background: #7a7575; }
 
-        .menu-buttons { display: flex; flex-direction: column; gap: 10px; }
-        .nav-btn { background: transparent; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.8); padding: 12px; border-radius: 12px; cursor: pointer; text-align: left; padding-left: 20px; font-size: 1rem; }
+        .menu-buttons { display: flex; flex-direction: column; gap: 10px; }
+        .nav-btn { background: transparent; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.8); padding: 12px; border-radius: 12px; cursor: pointer; text-align: left; padding-left: 20px; font-size: 1rem; }
 
-        .main-content { flex: 1; padding: 25px; overflow-y: auto; }
-        .view-container { display: flex; flex-direction: column; gap: 20px; height: 100%; }
+        .main-content { flex: 1; padding: 25px; overflow-y: auto; }
+        .view-container { display: flex; flex-direction: column; gap: 20px; height: 100%; }
 
-        .row-top { flex: 2.2; display: flex; gap: 20px; }
-        .row-bottom { flex: 1; display: flex; gap: 20px; }
-        .card { background: var(--card-bg); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; position: relative; }
+        .row-top { flex: 2.2; display: flex; gap: 20px; }
+        .row-bottom { flex: 1; display: flex; gap: 20px; }
+        .card { background: var(--card-bg); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; position: relative; }
 
-        .gauge-card { flex: 2.5; flex-direction: column; padding: 10px; }
-        .canvas-container { width: 320px; height: 320px; position: relative; display: flex; align-items: center; justify-content: center; }
-        .gauge-overlay { position: absolute; top: 52%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
-        .gauge-overlay .value { font-size: 5rem; font-weight: 800; color: #666; line-height: 1; }
-        .aqi-notice { margin-top: 15px; padding: 6px 25px; border-radius: 20px; font-weight: bold; color: white; font-size: 1rem; }
+        .gauge-card { flex: 2.5; flex-direction: column; padding: 10px; }
+        .canvas-container { width: 320px; height: 320px; position: relative; display: flex; align-items: center; justify-content: center; }
+        .gauge-overlay { position: absolute; top: 52%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+        .gauge-overlay .value { font-size: 5rem; font-weight: 800; color: #666; line-height: 1; }
+        .aqi-notice { margin-top: 15px; padding: 6px 25px; border-radius: 20px; font-weight: bold; color: white; font-size: 1rem; }
 
-        .stack-column { flex: 1; display: flex; flex-direction: column; gap: 20px; }
-        .stack-item { flex: 1; font-size: 2.8rem; font-weight: 600; color: #666; text-align: center; }
+        .stack-column { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+        .stack-item { flex: 1; font-size: 2.8rem; font-weight: 600; color: #666; text-align: center; }
 
-        .info-group-wide { flex: 2.2; display: flex; background: var(--card-bg); border-radius: var(--radius); overflow: hidden; }
-        .segment { flex: 1; border-right: 1px solid #d4d4d4; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 600; color: #888; }
-        .segment:last-child { border-right: none; }
+        .info-group-wide { flex: 2.2; display: flex; background: var(--card-bg); border-radius: var(--radius); overflow: hidden; }
+        .segment { flex: 1; border-right: 1px solid #d4d4d4; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 600; color: #888; }
+        .segment:last-child { border-right: none; }
 
-        .info-group-weather { flex: 1; display: flex; gap: 20px; }
-        .weather-card { flex: 1; font-size: 2rem; font-weight: 600; color: #888; }
+        .info-group-weather { flex: 1; display: flex; gap: 20px; }
+        .weather-card { flex: 1; font-size: 2rem; font-weight: 600; color: #888; }
 
-        /* Modal */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 9999; }
-        .modal-overlay.active { display: flex; }
-        .modal-content { background: white; padding: 30px; border-radius: var(--radius); width: 85%; max-width: 800px; position: relative; }
-        .chart-wrapper { height: 350px; width: 100%; margin-top: 10px; }
+        /* Modal */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 9999; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: white; padding: 30px; border-radius: var(--radius); width: 85%; max-width: 800px; position: relative; }
+        .chart-wrapper { height: 350px; width: 100%; margin-top: 10px; }
 
-        .sidebar-bottom { margin-top: auto; background: rgba(255,255,255,0.1); padding: 15px; border-radius: var(--radius); display: flex; align-items: center; gap: 15px; }
-        .analog-clock { width: 55px; height: 55px; border: 2px solid white; border-radius: 50%; position: relative; flex-shrink: 0; }
-        .hand { position: absolute; bottom: 50%; left: 50%; transform-origin: bottom; background: white; transform: translateX(-50%); }
-        .hour-hand { width: 3px; height: 12px; }
-        .min-hand { width: 2px; height: 18px; }
-        .sec-hand { width: 1px; height: 20px; background: #ff4444; }
+        .sidebar-bottom { margin-top: auto; background: rgba(255,255,255,0.1); padding: 15px; border-radius: var(--radius); display: flex; align-items: center; gap: 15px; }
+        .analog-clock { width: 55px; height: 55px; border: 2px solid white; border-radius: 50%; position: relative; flex-shrink: 0; }
+        .hand { position: absolute; bottom: 50%; left: 50%; transform-origin: bottom; background: white; transform: translateX(-50%); }
+        .hour-hand { width: 3px; height: 12px; }
+        .min-hand { width: 2px; height: 18px; }
+        .sec-hand { width: 1px; height: 20px; background: #ff4444; }
 
-        /* RESPONSIVE OVERRIDES (Phone View) */
-        @media (max-width: 768px) {
-            body { overflow-y: auto; }
-            .menu-toggle { display: block; }
-            .header { padding: 0 15px; }
-            #data-status { position: static; margin-left: auto; font-size: 0.7rem; }
+        /* RESPONSIVE OVERRIDES (Phone View) */
+        @media (max-width: 768px) {
+            body { overflow-y: auto; }
+            .menu-toggle { display: block; }
+            .header { padding: 0 15px; }
+            #data-status { position: static; margin-left: auto; font-size: 0.7rem; }
 
-            .sidebar {
-                position: fixed;
-                left: 0; top: 60px; bottom: 0;
-                z-index: 5000;
-                transform: translateX(-100%); /* Hidden by default */
-            }
-            .sidebar.active { transform: translateX(0); } /* Slide in */
+            .sidebar {
+                position: fixed;
+                left: 0; top: 60px; bottom: 0;
+                z-index: 5000;
+                transform: translateX(-100%); /* Hidden by default */
+            }
+            .sidebar.active { transform: translateX(0); } /* Slide in */
 
-            .app-container { overflow: visible; }
-            .main-content { padding: 15px; overflow: visible; }
-            
-            /* Convert rows to vertical columns for a long scrollable list */
-            .row-top, .row-bottom { flex-direction: column; flex: none; height: auto; }
-            .info-group-wide { flex-direction: column; flex: none; }
-            .segment { border-right: none; border-bottom: 1px solid #d4d4d4; padding: 30px 0; }
-            
-            .gauge-card { height: 400px; flex: none; }
-            .stack-item { height: 150px; flex: none; }
-            .weather-card { height: 120px; }
-        }
-    </style>
+            .app-container { overflow: visible; }
+            .main-content { padding: 15px; overflow: visible; }
+            
+            /* Convert rows to vertical columns for a long scrollable list */
+            .row-top, .row-bottom { flex-direction: column; flex: none; height: auto; }
+            .info-group-wide { flex-direction: column; flex: none; }
+            .segment { border-right: none; border-bottom: 1px solid #d4d4d4; padding: 30px 0; }
+            
+            .gauge-card { height: 400px; flex: none; }
+            .stack-item { height: 150px; flex: none; }
+            .weather-card { height: 120px; }
+        }
+    </style>
 </head>
 <body>
 
-    <div class="header">
-        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-        芳和實驗中學環境現況
-        <div id="data-status">● 數據載入中</div>
-    </div>
+    <div class="header">
+        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+        芳和實驗中學環境現況
+        <div id="data-status">● 數據載入中</div>
+    </div>
 
-    <div class="app-container">
-        <div class="sidebar" id="sidebar">
-            <div class="dropdown-container">
-                <button class="dropdown-btn" id="source-selector">小芳堂 ▼</button>
-                <ul class="dropdown-list" id="source-list">
-                    <li data-source="A">小芳堂</li>
-                    <li data-source="B">司令台</li>
-                    <li data-source="C">學務處</li>
-                </ul>
-            </div>
-            
-            <div class="menu-buttons">
-                <button class="nav-btn" onclick="navToModal('溫度', 's_t0')">溫度</button>
-                <button class="nav-btn" onclick="navToModal('濕度', 's_h0')">濕度</button>
-                <button class="nav-btn" onclick="navToModal('碳排放', 's_g8')">碳排放</button>
-                <button class="nav-btn" onclick="navToModal('有機物', 's_g8')">有機物</button>
-                <button class="nav-btn" onclick="navToModal('PM2.5', 's_d0')">PM2.5</button>
-            </div>
-            
-            <div class="sidebar-bottom">
-                <div class="analog-clock"><div class="hand hour-hand" id="hr"></div><div class="hand min-hand" id="mn"></div><div class="hand sec-hand" id="sc"></div></div>
-                <div><div id="date-display" style="font-size:0.7rem">--</div><div id="time-display" style="font-size:0.8rem; font-weight:bold">00:00:00</div></div>
-            </div>
-        </div>
+    <div class="app-container">
+        <div class="sidebar" id="sidebar">
+            <div class="dropdown-container">
+                <button class="dropdown-btn" id="source-selector">小芳堂 ▼</button>
+                <ul class="dropdown-list" id="source-list">
+                    <li data-source="A">小芳堂</li>
+                    <li data-source="B">司令台</li>
+                    <li data-source="C">學務處</li>
+                </ul>
+            </div>
+            
+            <div class="menu-buttons">
+                <button class="nav-btn" onclick="navToModal('溫度', 's_t0')">溫度</button>
+                <button class="nav-btn" onclick="navToModal('濕度', 's_h0')">濕度</button>
+                <button class="nav-btn" onclick="navToModal('碳排放', 's_g8')">碳排放</button>
+                <button class="nav-btn" onclick="navToModal('有機物', 's_g8')">有機物</button>
+                <button class="nav-btn" onclick="navToModal('PM2.5', 's_d0')">PM2.5</button>
+            </div>
+            
+            <div class="sidebar-bottom">
+                <div class="analog-clock"><div class="hand hour-hand" id="hr"></div><div class="hand min-hand" id="mn"></div><div class="hand sec-hand" id="sc"></div></div>
+                <div><div id="date-display" style="font-size:0.7rem">--</div><div id="time-display" style="font-size:0.8rem; font-weight:bold">00:00:00</div></div>
+            </div>
+        </div>
 
-        <div class="main-content">
-            <div class="view-container">
-                <div class="row-top">
-                    <div class="card gauge-card">
-                        <div class="canvas-container">
-                            <canvas id="pm25Gauge"></canvas>
-                            <div class="gauge-overlay">
-                                <div style="color:#aaa; font-size:1.1rem; font-weight: bold;">PM2.5</div>
-                                <div class="value" id="pm25-val">--</div>
-                                <div id="aqi-notice" class="aqi-notice">...</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="stack-column">
-                        <div class="card stack-item" id="temp-display">-- °C</div>
-                        <div class="card stack-item" id="humi-display">-- %</div>
-                    </div>
-                </div>
-                <div class="row-bottom">
-                    <div class="info-group-wide">
-                        <div class="segment" id="co2-display">-- ppm</div>
-                        <div class="segment" id="tvoc-display">-- ppb</div>
-                    </div>
-                    <div class="info-group-weather">
-                        <div class="card weather-card" id="precip-display">-- %</div>
-                        <div class="card weather-card" id="weather-icon">⛅</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+        <div class="main-content">
+            <div class="view-container">
+                <div class="row-top">
+                    <div class="card gauge-card">
+                        <div class="canvas-container">
+                            <canvas id="pm25Gauge"></canvas>
+                            <div class="gauge-overlay">
+                                <div style="color:#aaa; font-size:1.1rem; font-weight: bold;">PM2.5</div>
+                                <div class="value" id="pm25-val">--</div>
+                                <div id="aqi-notice" class="aqi-notice">...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stack-column">
+                        <div class="card stack-item" id="temp-display">-- °C</div>
+                        <div class="card stack-item" id="humi-display">-- %</div>
+                    </div>
+                </div>
+                <div class="row-bottom">
+                    <div class="info-group-wide">
+                        <div class="segment" id="co2-display">-- ppm</div>
+                        <div class="segment" id="tvoc-display">-- ppb</div>
+                    </div>
+                    <div class="info-group-weather">
+                        <div class="card weather-card" id="precip-display">-- %</div>
+                        <div class="card weather-card" id="weather-icon">⛅</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <div class="modal-overlay" id="history-modal">
-        <div class="modal-content">
-            <button style="float:right; border:none; background:none; font-size:2rem; cursor:pointer;" onclick="closeModal()">&times;</button>
-            <h2 id="modal-title">趨勢圖</h2>
-            <div class="chart-wrapper" id="chartParent">
-                <canvas id="historyChart"></canvas>
-            </div>
-        </div>
-    </div>
+    <div class="modal-overlay" id="history-modal">
+        <div class="modal-content">
+            <button style="float:right; border:none; background:none; font-size:2rem; cursor:pointer;" onclick="closeModal()">&times;</button>
+            <h2 id="modal-title">趨勢圖</h2>
+            <div class="chart-wrapper" id="chartParent">
+                <canvas id="historyChart"></canvas>
+            </div>
+        </div>
+    </div>
 
-    <script>
-        // JS Logic (Remains mostly same but adds toggle for mobile)
-        const config = {
-            'A': { name: '小芳堂', id: 'B827EB63D1C8' },
-            'B': { name: '司令台', id: 'B827EBC2994D' },
-            'C': { name: '學務處', id: 'B827EB797224' } 
-        };
+    <script>
+        // JS Logic (Remains mostly same but adds toggle for mobile)
+        const config = {
+            'A': { name: '小芳堂', id: 'B827EB63D1C8' },
+            'B': { name: '司令台', id: 'B827EBC2994D' },
+            'C': { name: '學務處', id: 'B827EB797224' } 
+        };
 
-        let currentSrc = 'A';
-        let gauge, historyChart;
-        let dataInterval;
+        let currentSrc = 'A';
+        let gauge, historyChart;
+        let dataInterval;
 
-        window.onload = () => {
-            initGauge();
-            setupDropdown();
-            updateClock();
-            setInterval(updateClock, 1000);
-            switchPage('A'); 
-        };
+        window.onload = () => {
+            initGauge();
+            setupDropdown();
+            updateClock();
+            setInterval(updateClock, 1000);
+            switchPage('A'); 
+        };
 
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
-        }
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
 
-        function navToModal(label, key) {
-            if (window.innerWidth <= 768) toggleSidebar(); // Auto-close sidebar on mobile
-            openModal(label, key);
-        }
+        function navToModal(label, key) {
+            if (window.innerWidth <= 768) toggleSidebar(); // Auto-close sidebar on mobile
+            openModal(label, key);
+        }
 
-        function setupDropdown() {
-            const btn = document.getElementById('source-selector');
-            const list = document.getElementById('source-list');
-            btn.onclick = (e) => { e.stopPropagation(); list.classList.toggle('show'); };
-            window.onclick = () => list.classList.remove('show');
-            document.querySelectorAll('#source-list li').forEach(li => {
-                li.onclick = () => {
-                    const src = li.dataset.source;
-                    btn.textContent = config[src].name + " ▼";
-                    switchPage(src);
-                };
-            });
-        }
+        function setupDropdown() {
+            const btn = document.getElementById('source-selector');
+            const list = document.getElementById('source-list');
+            btn.onclick = (e) => { e.stopPropagation(); list.classList.toggle('show'); };
+            window.onclick = () => list.classList.remove('show');
+            document.querySelectorAll('#source-list li').forEach(li => {
+                li.onclick = () => {
+                    const src = li.dataset.source;
+                    btn.textContent = config[src].name + " ▼";
+                    switchPage(src);
+                };
+            });
+        }
 
-        function switchPage(src) {
-            currentSrc = src;
-            if (dataInterval) clearInterval(dataInterval);
-            fetchData();
-            dataInterval = setInterval(fetchData, 30000);
-        }
+        function switchPage(src) {
+            currentSrc = src;
+            if (dataInterval) clearInterval(dataInterval);
+            fetchData();
+            dataInterval = setInterval(fetchData, 30000);
+        }
 
-        async function fetchData() {
-            const device = config[currentSrc];
-            try {
-                const res = await fetch(`https://pm25.lass-net.org/data/last.php?device_id=${device.id}`);
-                const json = await res.json();
-                const d = json.feeds[0][Object.keys(json.feeds[0])[0]];
+        async function fetchData() {
+            const device = config[currentSrc];
+            try {
+                const res = await fetch(`https://pm25.lass-net.org/data/last.php?device_id=${device.id}`);
+                const json = await res.json();
+                const d = json.feeds[0][Object.keys(json.feeds[0])[0]];
 
-                const pm = Math.round(d.s_d0);
-                document.getElementById('pm25-val').textContent = pm;
-                const pmColor = pm < 30 ? '#3aa02d' : (pm < 70 ? '#fffd21' : '#fa0000');
-                const notice = document.getElementById('aqi-notice');
-                notice.textContent = pm < 30 ? '良好' : '普通';
-                notice.style.backgroundColor = pmColor;
-                notice.style.color = (pm >= 30 && pm < 70) ? '#000' : '#fff';
-                document.getElementById('pm25-val').style.color = pmColor;
+                const pm = Math.round(d.s_d0);
+                document.getElementById('pm25-val').textContent = pm;
+                const pmColor = pm < 30 ? '#3aa02d' : (pm < 70 ? '#fffd21' : '#fa0000');
+                const notice = document.getElementById('aqi-notice');
+                notice.textContent = pm < 30 ? '良好' : '普通';
+                notice.style.backgroundColor = pmColor;
+                notice.style.color = (pm >= 30 && pm < 70) ? '#000' : '#fff';
+                document.getElementById('pm25-val').style.color = pmColor;
 
-                gauge.data.datasets[0].backgroundColor = [pmColor, '#e0e0e0'];
-                gauge.data.datasets[0].data = [pm, 150 - pm];
-                gauge.update();
+                gauge.data.datasets[0].backgroundColor = [pmColor, '#e0e0e0'];
+                gauge.data.datasets[0].data = [pm, 150 - pm];
+                gauge.update();
 
-                document.getElementById('temp-display').textContent = `${d.s_t0.toFixed(1)} °C`;
-                document.getElementById('humi-display').textContent = `${Math.round(d.s_h0)} %`;
-                document.getElementById('co2-display').textContent = `${Math.round(d.s_g8)} ppm`;
-                document.getElementById('tvoc-display').textContent = `${Math.round(d.s_g8)} ppb`;
+                document.getElementById('temp-display').textContent = `${d.s_t0.toFixed(1)} °C`;
+                document.getElementById('humi-display').textContent = `${Math.round(d.s_h0)} %`;
+                document.getElementById('co2-display').textContent = `${Math.round(d.s_g8)} ppm`;
+                document.getElementById('tvoc-display').textContent = `${Math.round(d.s_g8)} ppb`;
 
-                let prob = (Math.pow(d.s_h0, 2) / 115) + (d.s_t0 > 28 ? 8 : 0);
-                document.getElementById('precip-display').textContent = `${Math.round(Math.min(95, prob))} %`;
-                document.getElementById('weather-icon').textContent = prob > 65 ? '🌧️' : '⛅';
+                let prob = (Math.pow(d.s_h0, 2) / 115) + (d.s_t0 > 28 ? 8 : 0);
+                document.getElementById('precip-display').textContent = `${Math.round(Math.min(95, prob))} %`;
+                document.getElementById('weather-icon').textContent = prob > 65 ? '🌧️' : '⛅';
 
-                document.getElementById('data-status').innerHTML = `● ${device.name} 更新成功`;
-            } catch (e) { 
-                document.getElementById('data-status').innerHTML = `● 連線錯誤`;
-            }
-        }
+                document.getElementById('data-status').innerHTML = `● ${device.name} 更新成功`;
+            } catch (e) { 
+                document.getElementById('data-status').innerHTML = `● 連線錯誤`;
+            }
+        }
 
-        async function openModal(label, key) {
-            document.getElementById('modal-title').textContent = `${label} 24H趨勢`;
-            document.getElementById('history-modal').classList.add('active');
-            const parent = document.getElementById('chartParent');
-            parent.innerHTML = '<canvas id="historyChart"></canvas>';
-            const ctx = document.getElementById('historyChart').getContext('2d');
-            
-            try {
-                const res = await fetch(`https://pm25.lass-net.org/data/history.php?device_id=${config[currentSrc].id}`);
-                const json = await res.json();
-                const feeds = json.feeds.slice(-24);
-                const labels = feeds.map(f => f.time.split(' ')[1].substring(0, 5));
-                const dataValues = feeds.map(f => f[key]);
+        async function openModal(label, key) {
+            document.getElementById('modal-title').textContent = `${label} 24H趨勢`;
+            document.getElementById('history-modal').classList.add('active');
+            const parent = document.getElementById('chartParent');
+            parent.innerHTML = '<canvas id="historyChart"></canvas>';
+            const ctx = document.getElementById('historyChart').getContext('2d');
+            
+            try {
+                const res = await fetch(`https://pm25.lass-net.org/data/history.php?device_id=${config[currentSrc].id}`);
+                const json = await res.json();
+                const feeds = json.feeds.slice(-24);
+                const labels = feeds.map(f => f.time.split(' ')[1].substring(0, 5));
+                const dataValues = feeds.map(f => f[key]);
 
-                historyChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{ label: label, data: dataValues, borderColor: '#4a4545', fill: true, tension: 0.3 }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false }
-                });
-            } catch (e) { }
-        }
+                historyChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{ label: label, data: dataValues, borderColor: '#4a4545', fill: true, tension: 0.3 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            } catch (e) { }
+        }
 
-        function closeModal() { document.getElementById('history-modal').classList.remove('active'); }
+        function closeModal() { document.getElementById('history-modal').classList.remove('active'); }
 
-        function initGauge() {
-            const ctx = document.getElementById('pm25Gauge').getContext('2d');
-            gauge = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    datasets: [{
-                        data: [0, 150],
-                        backgroundColor: ['#3aa02d', '#e0e0e0'],
-                        circumference: 270,
-                        rotation: 225,
-                        cutout: '80%',
-                        borderRadius: 0
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
-        }
+        function initGauge() {
+            const ctx = document.getElementById('pm25Gauge').getContext('2d');
+            gauge = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [0, 150],
+                        backgroundColor: ['#3aa02d', '#e0e0e0'],
+                        circumference: 270,
+                        rotation: 225,
+                        cutout: '80%',
+                        borderRadius: 10
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
 
-        function updateClock() {
-            const now = new Date();
-            const h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
-            document.getElementById('hr').style.transform = `translateX(-50%) rotate(${(h % 12) * 30 + m * 0.5}deg)`;
-            document.getElementById('mn').style.transform = `translateX(-50%) rotate(${m * 6}deg)`;
-            document.getElementById('sc').style.transform = `translateX(-50%) rotate(${s * 6}deg)`;
-            document.getElementById('time-display').textContent = now.toLocaleTimeString('zh-TW', {hour12: false});
-            document.getElementById('date-display').textContent = now.toLocaleDateString('zh-TW', { weekday: 'short', month: 'numeric', day: 'numeric' });
-        }
-    </script>
+        function updateClock() {
+            const now = new Date();
+            const h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+            document.getElementById('hr').style.transform = `translateX(-50%) rotate(${(h % 12) * 30 + m * 0.5}deg)`;
+            document.getElementById('mn').style.transform = `translateX(-50%) rotate(${m * 6}deg)`;
+            document.getElementById('sc').style.transform = `translateX(-50%) rotate(${s * 6}deg)`;
+            document.getElementById('time-display').textContent = now.toLocaleTimeString('zh-TW', {hour12: false});
+            document.getElementById('date-display').textContent = now.toLocaleDateString('zh-TW', { weekday: 'short', month: 'numeric', day: 'numeric' });
+        }
+    </script>
 </body>
 </html>
