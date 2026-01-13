@@ -18,49 +18,48 @@
         body { font-family: -apple-system, sans-serif; background: var(--bg-color); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
         .header { height: 60px; background: var(--header-bg); display: flex; align-items: center; padding: 0 25px; font-weight: 600; position: relative; flex-shrink: 0; }
-        #data-status { position: absolute; right: 25px; font-size: 0.85rem; padding: 5px 12px; border-radius: 10px; background: #fff; border: 1px solid #ddd; color: #777; }
+        #data-status { position: absolute; right: 25px; font-size: 0.85rem; padding: 5px 12px; border-radius: 10px; background: #fff; border: 1px solid #ddd; color: #777; transition: all 0.3s; }
 
         .app-container { display: flex; flex: 1; overflow: hidden; }
         .sidebar { width: 280px; background: var(--sidebar-color); color: white; padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
         
         .dropdown-container { position: relative; margin-bottom: 20px; }
         .dropdown-btn { width: 100%; padding: 15px; border-radius: 10px; border: none; background: white; text-align: left; font-weight: bold; cursor: pointer; font-size: 1rem; }
-        .dropdown-list { position: absolute; top: 100%; left: 0; right: 0; background: #5a5555; border-radius: 0 0 10px 10px; list-style: none; z-index: 3000; display: none; }
+        .dropdown-list { position: absolute; top: 100%; left: 0; right: 0; background: #5a5555; border-radius: 0 0 10px 10px; list-style: none; z-index: 3000; display: none; overflow: hidden; }
         .dropdown-list.show { display: block; }
         .dropdown-list li { padding: 12px 15px; border-bottom: 1px solid #6a6565; cursor: pointer; }
+        .dropdown-list li:hover { background: #7a7575; }
 
         .menu-buttons { display: flex; flex-direction: column; gap: 10px; }
-        .nav-btn { background: transparent; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.8); padding: 12px; border-radius: 12px; cursor: pointer; text-align: left; font-size: 1rem; }
+        .nav-btn { background: transparent; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.8); padding: 12px; border-radius: 12px; cursor: pointer; text-align: left; padding-left: 20px; font-size: 1rem; transition: all 0.2s; }
+        .nav-btn:hover { background: rgba(255,255,255,0.1); color: white; }
 
         .main-content { flex: 1; padding: 25px; }
         .view-container { display: flex; flex-direction: column; gap: 20px; height: 100%; }
         .hidden { display: none !important; }
 
-        /* Layout Structure */
         .row-top { flex: 2.2; display: flex; gap: 20px; }
         .row-bottom { flex: 1; display: flex; gap: 20px; }
-        .card { background: var(--card-bg); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; }
+        .card { background: var(--card-bg); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; position: relative; }
 
-        .gauge-card { flex: 2.5; flex-direction: column; }
+        .gauge-card { flex: 2.5; flex-direction: column; padding: 10px; }
         .canvas-container { width: 320px; height: 320px; position: relative; display: flex; align-items: center; justify-content: center; }
         .gauge-overlay { position: absolute; top: 52%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
-        .gauge-overlay .value { font-size: 5rem; font-weight: 800; color: #666; }
-        .aqi-notice { margin-top: 15px; padding: 6px 25px; border-radius: 20px; font-weight: bold; color: white; }
+        .gauge-overlay .value { font-size: 5rem; font-weight: 800; color: #666; line-height: 1; }
+        .aqi-notice { margin-top: 15px; padding: 6px 25px; border-radius: 20px; font-weight: bold; color: white; font-size: 1rem; }
 
-        /* Middle Column - Now Taller */
         .stack-column { flex: 1; display: flex; flex-direction: column; gap: 20px; }
-        .stack-item { flex: 1; font-size: 2.8rem; font-weight: 600; color: #666; }
+        .stack-item { flex: 1; font-size: 2.5rem; font-weight: 600; color: #666; text-align: center; }
 
-        /* Bottom Row */
         .info-group-wide { flex: 2.2; display: flex; background: var(--card-bg); border-radius: var(--radius); overflow: hidden; }
-        .segment { flex: 1; border-right: 1px solid #d4d4d4; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 600; color: #888; }
+        .segment { flex: 1; border-right: 1px solid #d4d4d4; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 600; color: #888; }
         .segment:last-child { border-right: none; }
 
         .info-group-weather { flex: 1; display: flex; gap: 20px; }
         .weather-card { flex: 1; font-size: 2rem; font-weight: 600; color: #888; }
 
-        .sidebar-bottom { margin-top: auto; display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: var(--radius); }
-        .analog-clock { width: 50px; height: 50px; border: 2px solid white; border-radius: 50%; position: relative; }
+        .sidebar-bottom { margin-top: auto; background: rgba(255,255,255,0.1); padding: 15px; border-radius: var(--radius); display: flex; align-items: center; gap: 15px; }
+        .analog-clock { width: 55px; height: 55px; border: 2px solid white; border-radius: 50%; position: relative; flex-shrink: 0; }
         .hand { position: absolute; bottom: 50%; left: 50%; transform-origin: bottom; background: white; transform: translateX(-50%); }
         .hour-hand { width: 3px; height: 12px; }
         .min-hand { width: 2px; height: 18px; }
@@ -132,7 +131,7 @@
         const config = {
             'A': { name: '小芳堂', id: 'B827EB63D1C8' },
             'B': { name: '司令台', id: 'B827EBC2994D' },
-            'C': { name: '學務處', id: 'B827EB63D1C8' } // Placeholder ID
+            'C': { name: '學務處', id: 'B827EB63D1C8' } 
         };
 
         let currentSrc = 'A';
@@ -147,16 +146,22 @@
             setInterval(fetchData, 30000);
         };
 
-        function setupDropdown() {
-            const btn = document.getElementById('source-selector');
-            const list = document.getElementById('source-list');
-            btn.onclick = (e) => { e.stopPropagation(); list.classList.toggle('show'); };
-            document.querySelectorAll('#source-list li').forEach(li => {
-                li.onclick = () => {
-                    currentSrc = li.dataset.source;
-                    btn.textContent = config[currentSrc].name + " ▼";
-                    fetchData();
-                };
+        function initGauge() {
+            const ctx = document.getElementById('pm25Gauge').getContext('2d');
+            gauge = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [0, 150],
+                        backgroundColor: ['#3aa02d', '#e0e0e0'], // Restored gray fill track
+                        borderWidth: 0,
+                        circumference: 270,
+                        rotation: 225,
+                        cutout: '80%',
+                        borderRadius: 10
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
         }
 
@@ -166,25 +171,28 @@
                 const json = await res.json();
                 const d = json.feeds[0][Object.keys(json.feeds[0])[0]];
 
-                // PM2.5
+                // PM2.5 Logic
                 const pm = Math.round(d.s_d0);
                 document.getElementById('pm25-val').textContent = pm;
                 const color = pm < 30 ? '#3aa02d' : (pm < 70 ? '#fffd21' : '#fa0000');
-                document.getElementById('aqi-notice').textContent = pm < 30 ? '良好' : '普通';
-                document.getElementById('aqi-notice').style.backgroundColor = color;
-                gauge.data.datasets[0].backgroundColor = [color, '#e8e8e8'];
-                gauge.data.datasets[0].data = [pm, 150 - pm];
+                const notice = document.getElementById('aqi-notice');
+                notice.textContent = pm < 30 ? '良好' : '普通';
+                notice.style.backgroundColor = color;
+                notice.style.color = (pm >= 30 && pm < 70) ? '#000' : '#fff';
+
+                gauge.data.datasets[0].backgroundColor = [color, '#e0e0e0']; // Update with gray fill
+                gauge.data.datasets[0].data = [pm, Math.max(0, 150 - pm)];
                 gauge.update();
 
-                // Temp & Humi
+                // Stats
                 document.getElementById('temp-display').textContent = `${d.s_t0.toFixed(1)} °C`;
                 document.getElementById('humi-display').textContent = `${Math.round(d.s_h0)} %`;
+                
+                // Carbon (Mapping s_g8 since s_c0 is empty)
+                document.getElementById('co2-display').textContent = d.s_g8 ? `${Math.round(d.s_g8)} ppm` : "-- ppm";
+                document.getElementById('tvoc-display').textContent = d.s_g8 ? `${Math.round(d.s_g8)} ppb` : "-- ppb";
 
-                // Carbon & Organic Matter (Both mapped to s_g8 for visibility)
-                document.getElementById('co2-display').textContent = `${Math.round(d.s_g8)} ppm`;
-                document.getElementById('tvoc-display').textContent = `${Math.round(d.s_g8)} ppb`;
-
-                // Weather Logic
+                // Weather
                 let prob = (Math.pow(d.s_h0, 2) / 115) + (d.s_t0 > 28 ? 8 : 0);
                 prob = Math.min(95, Math.max(5, prob));
                 document.getElementById('precip-display').textContent = `${Math.round(prob)} %`;
@@ -194,12 +202,17 @@
             } catch (e) { console.error(e); }
         }
 
-        function initGauge() {
-            const ctx = document.getElementById('pm25Gauge').getContext('2d');
-            gauge = new Chart(ctx, {
-                type: 'doughnut',
-                data: { datasets: [{ data: [0, 150], backgroundColor: ['#3aa02d', '#e8e8e8'], circumference: 270, rotation: 225, cutout: '80%', borderRadius: 10 }] },
-                options: { plugins: { legend: { display: false } } }
+        function setupDropdown() {
+            const btn = document.getElementById('source-selector');
+            const list = document.getElementById('source-list');
+            btn.onclick = (e) => { e.stopPropagation(); list.classList.toggle('show'); };
+            window.onclick = () => list.classList.remove('show');
+            document.querySelectorAll('#source-list li').forEach(li => {
+                li.onclick = () => {
+                    currentSrc = li.dataset.source;
+                    btn.textContent = config[currentSrc].name + " ▼";
+                    fetchData();
+                };
             });
         }
 
