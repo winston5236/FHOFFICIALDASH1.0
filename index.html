@@ -37,7 +37,6 @@
         .main-content { flex: 1; padding: 25px; }
         .view-container { display: flex; flex-direction: column; gap: 20px; height: 100%; }
 
-        /* 排版結構 */
         .row-top { flex: 2.2; display: flex; gap: 20px; }
         .row-bottom { flex: 1; display: flex; gap: 20px; }
         .card { background: var(--card-bg); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; position: relative; }
@@ -58,7 +57,7 @@
         .info-group-weather { flex: 1; display: flex; gap: 20px; }
         .weather-card { flex: 1; font-size: 2rem; font-weight: 600; color: #888; }
 
-        /* 彈窗樣式 */
+        /* 彈窗 */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 9999; }
         .modal-overlay.active { display: flex; }
         .modal-content { background: white; padding: 30px; border-radius: var(--radius); width: 85%; max-width: 800px; position: relative; }
@@ -89,11 +88,11 @@
             </div>
             
             <div class="menu-buttons">
-                <button class="nav-btn" onclick="openModal('溫度')">溫度</button>
-                <button class="nav-btn" onclick="openModal('濕度')">濕度</button>
-                <button class="nav-btn" onclick="openModal('碳排放')">碳排放</button>
-                <button class="nav-btn" onclick="openModal('有機物')">有機物</button>
-                <button class="nav-btn" onclick="openModal('PM2.5')">PM2.5</button>
+                <button class="nav-btn" onclick="openModal('溫度', 's_t0')">溫度</button>
+                <button class="nav-btn" onclick="openModal('濕度', 's_h0')">濕度</button>
+                <button class="nav-btn" onclick="openModal('碳排放', 's_g8')">碳排放</button>
+                <button class="nav-btn" onclick="openModal('有機物', 's_g8')">有機物</button>
+                <button class="nav-btn" onclick="openModal('PM2.5', 's_d0')">PM2.5</button>
             </div>
             
             <div class="sidebar-bottom">
@@ -137,7 +136,7 @@
     <div class="modal-overlay" id="history-modal">
         <div class="modal-content">
             <button class="close-modal" onclick="closeModal()">&times;</button>
-            <h2 id="modal-title">歷史趨勢</h2>
+            <h2 id="modal-title">歷史趨勢 (24小時)</h2>
             <div class="chart-wrapper" id="chartParent">
                 <canvas id="historyChart"></canvas>
             </div>
@@ -168,7 +167,6 @@
             const list = document.getElementById('source-list');
             btn.onclick = (e) => { e.stopPropagation(); list.classList.toggle('show'); };
             window.onclick = () => list.classList.remove('show');
-
             document.querySelectorAll('#source-list li').forEach(li => {
                 li.onclick = () => {
                     const src = li.dataset.source;
@@ -190,8 +188,7 @@
             try {
                 const res = await fetch(`https://pm25.lass-net.org/data/last.php?device_id=${device.id}`);
                 const json = await res.json();
-                const feed = json.feeds[0];
-                const d = feed[Object.keys(feed)[0]];
+                const d = json.feeds[0][Object.keys(json.feeds[0])[0]];
 
                 const pm = Math.round(d.s_d0);
                 document.getElementById('pm25-val').textContent = pm;
@@ -215,16 +212,61 @@
                 document.getElementById('precip-display').textContent = `${Math.round(prob)} %`;
                 document.getElementById('weather-icon').textContent = prob > 65 ? '🌧️' : '⛅';
 
-                // **更新狀態欄：名稱 + ID**
                 const statusEl = document.getElementById('data-status');
                 statusEl.innerHTML = `● ${device.name} (${device.id}) 數據已更新`;
                 statusEl.style.color = '#2e7d32';
-
             } catch (e) { 
                 document.getElementById('data-status').innerHTML = `● ${device.name} 連線錯誤`;
                 document.getElementById('data-status').style.color = '#d32f2f';
             }
         }
+
+        // --- 核心：真實 24 小時歷史數據抓取 ---
+        async function openModal(label, key) {
+            document.getElementById('modal-title').textContent = `${label} 24小時趨勢 (${config[currentSrc].name})`;
+            document.getElementById('history-modal').classList.add('active');
+            
+            const parent = document.getElementById('chartParent');
+            parent.innerHTML = '<canvas id="historyChart"></canvas>';
+            
+            try {
+                // 從 LASS 歷史 API 獲取最近 24 小時數據
+                const res = await fetch(`https://pm25.lass-net.org/data/history.php?device_id=${config[currentSrc].id}`);
+                const json = await res.json();
+                
+                // 整理數據：只取最近 24 筆（代表大約過去 24 小時的變化）
+                const feeds = json.feeds.slice(-24); 
+                const labels = feeds.map(f => f.time.split(' ')[1].substring(0, 5)); // 提取 HH:mm
+                const dataValues = feeds.map(f => f[key]);
+
+                const ctx = document.getElementById('historyChart').getContext('2d');
+                historyChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: label,
+                            data: dataValues,
+                            borderColor: '#4a4545',
+                            backgroundColor: 'rgba(74, 69, 69, 0.1)',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 2
+                        }]
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: false } }
+                    }
+                });
+            } catch (e) {
+                console.error("無法載入歷史數據", e);
+                alert("無法從 LASS 伺服器獲取歷史紀錄。");
+            }
+        }
+
+        function closeModal() { document.getElementById('history-modal').classList.remove('active'); }
 
         function initGauge() {
             const ctx = document.getElementById('pm25Gauge').getContext('2d');
@@ -243,39 +285,6 @@
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
-        }
-
-        // --- 彈窗功能 ---
-        function openModal(type) {
-            document.getElementById('modal-title').textContent = type + " 歷史趨勢";
-            document.getElementById('history-modal').classList.add('active');
-            
-            // 重置畫布
-            const parent = document.getElementById('chartParent');
-            parent.innerHTML = '<canvas id="historyChart"></canvas>';
-            
-            setTimeout(() => {
-                const ctx = document.getElementById('historyChart').getContext('2d');
-                historyChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'],
-                        datasets: [{
-                            label: type,
-                            data: [18, 25, 30, 22, 19, 24], // 此處為模擬數據
-                            borderColor: '#4a4545',
-                            backgroundColor: 'rgba(74, 69, 69, 0.1)',
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false }
-                });
-            }, 50);
-        }
-
-        function closeModal() {
-            document.getElementById('history-modal').classList.remove('active');
         }
 
         function updateClock() {
