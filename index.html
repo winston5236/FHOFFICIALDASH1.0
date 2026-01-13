@@ -57,7 +57,7 @@
         .info-group-weather { flex: 1; display: flex; gap: 20px; }
         .weather-card { flex: 1; font-size: 2rem; font-weight: 600; color: #888; }
 
-        /* 彈窗 */
+        /* Modal Styles */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 9999; }
         .modal-overlay.active { display: flex; }
         .modal-content { background: white; padding: 30px; border-radius: var(--radius); width: 85%; max-width: 800px; position: relative; }
@@ -188,6 +188,7 @@
             try {
                 const res = await fetch(`https://pm25.lass-net.org/data/last.php?device_id=${device.id}`);
                 const json = await res.json();
+                if (!json.feeds || json.feeds.length === 0) throw new Error();
                 const d = json.feeds[0][Object.keys(json.feeds[0])[0]];
 
                 const pm = Math.round(d.s_d0);
@@ -212,34 +213,38 @@
                 document.getElementById('precip-display').textContent = `${Math.round(prob)} %`;
                 document.getElementById('weather-icon').textContent = prob > 65 ? '🌧️' : '⛅';
 
-                const statusEl = document.getElementById('data-status');
-                statusEl.innerHTML = `● ${device.name} (${device.id}) 數據已更新`;
-                statusEl.style.color = '#2e7d32';
+                document.getElementById('data-status').innerHTML = `● ${device.name} (${device.id}) 數據已更新`;
+                document.getElementById('data-status').style.color = '#2e7d32';
             } catch (e) { 
                 document.getElementById('data-status').innerHTML = `● ${device.name} 連線錯誤`;
                 document.getElementById('data-status').style.color = '#d32f2f';
             }
         }
 
-        // --- 核心：真實 24 小時歷史數據抓取 ---
         async function openModal(label, key) {
             document.getElementById('modal-title').textContent = `${label} 24小時趨勢 (${config[currentSrc].name})`;
             document.getElementById('history-modal').classList.add('active');
             
             const parent = document.getElementById('chartParent');
             parent.innerHTML = '<canvas id="historyChart"></canvas>';
+            const ctx = document.getElementById('historyChart').getContext('2d');
             
             try {
-                // 從 LASS 歷史 API 獲取最近 24 小時數據
                 const res = await fetch(`https://pm25.lass-net.org/data/history.php?device_id=${config[currentSrc].id}`);
                 const json = await res.json();
                 
-                // 整理數據：只取最近 24 筆（代表大約過去 24 小時的變化）
-                const feeds = json.feeds.slice(-24); 
-                const labels = feeds.map(f => f.time.split(' ')[1].substring(0, 5)); // 提取 HH:mm
-                const dataValues = feeds.map(f => f[key]);
+                if (!json.feeds || json.feeds.length === 0) throw new Error("無歷史紀錄");
 
-                const ctx = document.getElementById('historyChart').getContext('2d');
+                // 安全性檢查：過濾無效時間數據
+                const validFeeds = json.feeds.filter(f => f.time && f[key] !== undefined).slice(-24);
+                if (validFeeds.length === 0) throw new Error("數據不足");
+
+                const labels = validFeeds.map(f => {
+                    if (f.time.includes(' ')) return f.time.split(' ')[1].substring(0, 5);
+                    return f.time.substring(0, 5);
+                });
+                const dataValues = validFeeds.map(f => f[key]);
+
                 historyChart = new Chart(ctx, {
                     type: 'line',
                     data: {
@@ -251,7 +256,7 @@
                             backgroundColor: 'rgba(74, 69, 69, 0.1)',
                             fill: true,
                             tension: 0.3,
-                            pointRadius: 2
+                            pointRadius: 3
                         }]
                     },
                     options: { 
@@ -261,8 +266,11 @@
                     }
                 });
             } catch (e) {
-                console.error("無法載入歷史數據", e);
-                alert("無法從 LASS 伺服器獲取歷史紀錄。");
+                console.error(e);
+                ctx.font = "16px Arial";
+                ctx.fillStyle = "#999";
+                ctx.textAlign = "center";
+                ctx.fillText("數據暫時無法載入", ctx.canvas.width/2, ctx.canvas.height/2);
             }
         }
 
