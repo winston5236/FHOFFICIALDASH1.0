@@ -254,7 +254,7 @@
                 document.getElementById('temp-display').textContent = `${d.s_t0.toFixed(1)} °C`;
                 document.getElementById('humi-display').textContent = `${Math.round(d.s_h0)} %`;
                 document.getElementById('co2-display').textContent = `${Math.round(d.s_g8)} ppm`;
-                document.getElementById('tvoc-display').textContent = `${Math.round(d.s_g8)} ppb`;
+                document.getElementById('tvoc-display').textContent = `${Math.round(d.s_gg)} ppb`;
 
                 let prob = (Math.pow(d.s_h0, 2) / 115) + (d.s_t0 > 28 ? 8 : 0);
                 document.getElementById('precip-display').textContent = `${Math.round(Math.min(95, prob))} %`;
